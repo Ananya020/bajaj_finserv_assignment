@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BFHL Hierarchy Builder</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .output {
+      margin-top: 20px;
+      background: #111;
+      color: #0f0;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Hierarchy API Tester</h1>
+
+  <label>Enter node list (comma separated):</label>
+  <textarea id="inputData">A->B, A->C, B->D</textarea>
+
+  <button onclick="submitData()">Submit</button>
+
+  <div id="error" class="error"></div>
+  <div id="result" class="output"></div>
+</div>
+
+<script>
+  async function submitData() {
+    const input = document.getElementById("inputData").value;
+    const errorDiv = document.getElementById("error");
+    const resultDiv = document.getElementById("result");
+
+    errorDiv.innerText = "";
+    resultDiv.innerText = "Loading...";
+
+    // Convert input string to array
+    const dataArray = input
+      .split(",")
+      .map(item => item.trim())
+      .filter(item => item.length > 0);
+
+    try {
+      const response = await fetch("https://bajaj-finserv-assignment-oyww.onrender.com/bfhl", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ data: dataArray })
+      });
+
+      if (!response.ok) {
+        throw new Error("API request failed");
+      }
+
+      const data = await response.json();
+
+      resultDiv.innerText = JSON.stringify(data, null, 2);
+
+    } catch (err) {
+      resultDiv.innerText = "";
+      errorDiv.innerText = "Error: " + err.message;
+    }
+  }
+</script>
+
+</body>
+</html>

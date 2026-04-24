@@ -68,7 +68,7 @@ app.post("/bfhl", (req, res) => {
 
     visited.add(node);
 
-    let children = adj[node] || {};
+    let children = adj[node] || [];
     let tree = {};
 
     for (let child of children) {
