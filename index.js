@@ -1,23 +1,21 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+
 app.use(express.json());
 app.use(cors());
 
 app.post("/bfhl", (req, res) => {
   const data = req.body.data || [];
 
-  let invalid_entries = [];
-  let duplicate_edges = [];
-
+  const invalid_entries = [];
+  const duplicate_edges = [];
   const edgeSet = new Set();
-  const usedEdges = new Set();
-
+  const duplicateSet = new Set();
   const adj = {};
   const childParent = {};
   const childSet = new Set();
 
-  // Step 1 & 2
   data.forEach((item) => {
     const str = item.trim();
 
@@ -27,7 +25,10 @@ app.post("/bfhl", (req, res) => {
     }
 
     if (edgeSet.has(str)) {
-      duplicate_edges.push(str);
+      if (!duplicateSet.has(str)) {
+        duplicate_edges.push(str);
+        duplicateSet.add(str);
+      }
       return;
     }
 
@@ -35,7 +36,6 @@ app.post("/bfhl", (req, res) => {
 
     const [parent, child] = str.split("->");
 
-    // Multi-parent check
     if (childParent[child]) return;
 
     childParent[child] = parent;
@@ -46,35 +46,32 @@ app.post("/bfhl", (req, res) => {
     childSet.add(child);
   });
 
-  // All nodes
   const nodes = new Set();
   Object.keys(adj).forEach((k) => {
     nodes.add(k);
     adj[k].forEach((c) => nodes.add(c));
   });
 
-  // Find roots
   let roots = [...nodes].filter((n) => !childSet.has(n));
 
   if (roots.length === 0 && nodes.size > 0) {
     roots = [Array.from(nodes).sort()[0]];
   }
 
-  let hierarchies = [];
-  let visitedGlobal = new Set();
+  const hierarchies = [];
 
   function dfs(node, visited) {
     if (visited.has(node)) return "cycle";
 
     visited.add(node);
 
-    let children = adj[node] || [];
-    let tree = {};
+    const children = adj[node] || [];
+    const tree = {};
 
-    for (let child of children) {
-      let res = dfs(child, new Set(visited));
-      if (res === "cycle") return "cycle";
-      tree[child] = res;
+    for (const child of children) {
+      const result = dfs(child, new Set(visited));
+      if (result === "cycle") return "cycle";
+      tree[child] = result;
     }
 
     return tree;
@@ -91,7 +88,7 @@ app.post("/bfhl", (req, res) => {
   let maxDepth = 0;
 
   roots.forEach((root) => {
-    let result = dfs(root, new Set());
+    const result = dfs(root, new Set());
 
     if (result === "cycle") {
       total_cycles++;
@@ -101,17 +98,13 @@ app.post("/bfhl", (req, res) => {
         has_cycle: true,
       });
     } else {
-      let treeObj = {};
+      const treeObj = {};
       treeObj[root] = result;
 
-      let depth = getDepth(root);
-
+      const depth = getDepth(root);
       total_trees++;
 
-      if (
-        depth > maxDepth ||
-        (depth === maxDepth && root < largest_tree_root)
-      ) {
+      if (depth > maxDepth || (depth === maxDepth && root < largest_tree_root)) {
         maxDepth = depth;
         largest_tree_root = root;
       }
@@ -125,9 +118,9 @@ app.post("/bfhl", (req, res) => {
   });
 
   res.json({
-    user_id: "yourname_ddmmyyyy",
-    email_id: "your@email.com",
-    college_roll_number: "your_roll",
+    user_id: "AnanyaAgrawal_03012006",
+    email_id: "aa6196@srmist.edu.in",
+    college_roll_number: "RA2311003010974",
     hierarchies,
     invalid_entries,
     duplicate_edges,
@@ -139,4 +132,4 @@ app.post("/bfhl", (req, res) => {
   });
 });
 
-app.listen(3000, () => console.log("Server running"));
+app.listen(3000, () => console.log("Server running on port 3000"));
